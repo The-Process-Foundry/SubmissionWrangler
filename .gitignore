@@ -1,6 +1,24 @@
+# Documentation - ignore the better title
+"docs/Submission Wrangler/"
+
+# Personal configuration of Obsidian (used to create docs)
+.obsidian
+
+# Files that can be used locally but should not be saved into git
+# For example, raw Fishhead Labs data
+local/
+
+# Rust build outputs
 target/
 
+# Javascript modules installed by the client
 /node_modules
-/dist
+
+# Packaging for the WebAssembly project
+client/dist
+
+
+# IDE Code
 /*.iml
 /.idea
+

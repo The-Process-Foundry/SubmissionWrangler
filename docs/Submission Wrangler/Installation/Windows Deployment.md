@@ -1,0 +1,1 @@
+These are the steps I took on a clean Tiny10 Windows VM. YMMV

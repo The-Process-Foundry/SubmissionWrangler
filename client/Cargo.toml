@@ -6,4 +6,19 @@ version = "2.0.0"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-yew = {version = "0.20", features = ["csr"]}
+# DTOs and common modeling for the wrangler
+wrangler-common = {path="../common"}
+
+
+yew = {version = "0.21", features = ["csr"]}
+
+js-sys = "0.3.64"
+
+wasm-bindgen = "0.2.87"
+wasm-bindgen-futures = "0.4.37"
+
+web-sys = "0.3.64"
+
+tracing = "0.1.37"
+tracing-subscriber = {version="0.3.17", features=["fmt", "time"]}
+tracing-web = "0.1.2"

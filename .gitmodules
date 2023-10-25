@@ -1,0 +1,12 @@
+[submodule "related/allwhat"]
+	path = related/allwhat
+	url = git@github.com:The-Process-Foundry/AllWhat.git
+[submodule "related/ymlog"]
+	path = related/ymlog
+	url = git@github.com:The-Process-Foundry/ymlog.git
+[submodule "related/panama"]
+	path = related/panama
+	url = git@github.com:The-Process-Foundry/Panama.git
+[submodule "related/grapht"]
+	path = related/grapht
+	url = git@github.com:The-Process-Foundry/Grapht.git

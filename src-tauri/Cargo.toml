@@ -1,7 +1,6 @@
 [package]
 authors = ["you"]
-default-run = "app"
-description = "Manage Submissions for Fishhead Labs"
+description = "Pathology Submission Manager"
 edition = "2021"
 license = ""
 name = "fhl-submission-system"
@@ -12,12 +11,30 @@ version = "0.1.0"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [build-dependencies]
-tauri-build = {version = "1.4.0", features = [] }
+tauri-build = {version = "1.4.1", features = [] }
 
 [dependencies]
 serde = {version = "1.0", features = ["derive"] }
 serde_json = "1.0"
-tauri = {version = "1.4.0", features = [] }
+tauri = {version = "1.5.0", features = [] }
+
+# Logging/instrumentation
+tracing-subscriber = "0.3.17"
+
+# _____________________   SERVER IMPORTS   ______________________________
+# Global IDs
+uuid = {version = "1.4.1", features = ["v4", "v5", "serde", "js"] }
+
+# Service: Database
+neo4rs = {version = "0.6.2"}
+
+# Async code?
+futures = { version = "0.3.28" }
+tokio = { version = "1.32.0", features = ["full"] }
+tokio-rustls = "0.24.1"
+
+tracing = "0.1.37"
+
 
 [features]
 # this feature is used for production builds or when `devPath` points to the filesystem and the built-in dev server is disabled.

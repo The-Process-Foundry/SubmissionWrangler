@@ -1,8 +1,14 @@
 [package]
 edition = "2021"
-name = "fhl-v2-common"
+name = "wrangler-common"
 version = "0.1.0"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+# String Guid generaters
+uuid = {version = "1.4.1", features = ["v4", "v5", "serde", "js"]}
+
+# raw http tools
+http = "0.2.9"
+

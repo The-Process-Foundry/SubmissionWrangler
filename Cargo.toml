@@ -1,0 +1,33 @@
+[workspace]
+resolver = "2"
+
+members = [
+  # GUI code written in yew
+  "client",
+
+  # Items used by both the client and server, such as the database storage model and API Dtos
+  "common",
+
+  # An API exposing full access to the backend services
+  "server",
+
+  # Packaging and glue for creating a desktop version combining the client and server
+  "src-tauri",
+
+  # -----------------------------------------------------------------------------------
+  # Related projects
+
+  # Separate projects that are associated using git submodule, as they are being developed in parallel
+  # with the live code.
+
+  # # Opinionated error management tool
+  # "related/allwhat/core",
+  # "related/allwhat/macros",
+
+  # # An in-memory graph database structure
+  # "related/grapht",
+
+  # # A tool for making the development environment easy to use
+  # "related/panama/cli",
+  # "related/panama/core"
+]
