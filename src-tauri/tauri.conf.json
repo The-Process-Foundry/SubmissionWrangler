@@ -56,10 +56,10 @@
     "windows": [
       {
         "fullscreen": false,
-        "height": 600,
+        "height": 1500,
         "resizable": true,
-        "title": "Fishhead Labs Submission System",
-        "width": 800
+        "title": "Fishhead Labs Submission Wrangler",
+        "width": 1500
       }
     ]
   }

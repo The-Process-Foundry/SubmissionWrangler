@@ -9,7 +9,8 @@ members = [
   "common",
 
   # An API exposing full access to the backend services
-  "server",
+  # TODO: This is broken, so I'm going to comment it out to get rid of the error noise
+  # "server",
 
   # Packaging and glue for creating a desktop version combining the client and server
   "src-tauri",
