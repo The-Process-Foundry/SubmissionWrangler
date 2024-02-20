@@ -9,11 +9,13 @@ members = [
   "common",
 
   # An API exposing full access to the backend services
-  # TODO: This is broken, so I'm going to comment it out to get rid of the error noise
-  # "server",
+  "server",
 
   # Packaging and glue for creating a desktop version combining the client and server
   "src-tauri",
+
+  # Graph Database style access - both in-memory and DB server
+  "importer",
 
   # -----------------------------------------------------------------------------------
   # Related projects

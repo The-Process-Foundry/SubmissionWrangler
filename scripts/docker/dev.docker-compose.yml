@@ -1,0 +1,18 @@
+version: "3.8"
+name: wrangler
+services:
+  graph_db:
+    image: neo4j:latest
+    command: neo4j
+    environment:
+      - NEO4J_AUTH=neo4j/neo_pass
+      - NEO4J_ACCEPT_LICENSE_AGREEMENT=yes
+    ports:
+      - target: 7474
+        published: 7474
+        protocol: tcp
+        mode: host
+      - target: 7687
+        published: 7687
+        protocol: tcp
+        mode: host
