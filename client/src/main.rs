@@ -5,12 +5,21 @@ use wasm_bindgen_futures::spawn_local;
 use yew::prelude::*;
 
 pub(crate) mod glue;
+mod views;
+pub use views::organization::*;
 
 /// Messages that can be sent to the server for processing
 #[derive(Debug, Clone)]
 enum Call {
   LoadCSV,
   QueryAll,
+}
+
+/// Root pages to be displayed in the body of the page
+#[derive(Debug, Clone)]
+enum PageView {
+  Dashboard,
+  Organizations,
 }
 
 /// Messages that have side effects that may eventually alter the AppState
@@ -21,6 +30,9 @@ enum AppAction {
 
   /// A message that an asynchronous call has been completed and the result should be processed
   Thunk(String),
+
+  /// Switch the page
+  ChangePage(PageView),
 }
 
 /// Application configuration settings and current runtime values of the app
@@ -31,9 +43,13 @@ struct AppState {
   /// This is the local data cache as stored by Grapht. This will act as a local database and hide
   /// how the sausage is made.
   data_graph: String,
+
+  /// The active page displayed in the body
+  current_page: PageView,
 }
 
 impl AppState {
+  /// Perform an update on the state based on the info contained in the call
   pub fn call(self, call: Call) -> Self {
     let new_state = match call {
       Call::LoadCSV => AppState {
@@ -58,6 +74,13 @@ impl AppState {
 
     new_state
   }
+
+  pub fn change_page(self, page: PageView) -> Self {
+    AppState {
+      current_page: page,
+      ..self
+    }
+  }
 }
 
 impl Default for AppState {
@@ -65,6 +88,7 @@ impl Default for AppState {
     AppState {
       // settings: "No Settings Yet".to_string(),
       data_graph: "Initialized".to_string(),
+      current_page: PageView::Organizations,
     }
   }
 }
@@ -78,6 +102,7 @@ impl Reducible for AppState {
     let current_state = self.as_ref().clone();
     let new_state = match action {
       AppAction::CallServer(call) => current_state.call(call),
+      AppAction::ChangePage(new_body) => current_state.change_page(new_body),
       AppAction::Thunk(msg) => {
         info!("Processing an async result: {:?}", msg);
         current_state
@@ -130,10 +155,17 @@ fn app() -> Html {
     })
   };
 
+  let body = match &state.current_page {
+    PageView::Dashboard => todo!("No dashboard yet"),
+    PageView::Organizations => html! {<OrgGrid></OrgGrid>},
+  };
+
   info!("Rendering the App");
   html! {
     <div style="width: 100%;">
       <h1>{ "Welcome to the Submission Wrangler" }</h1>
+      <hr />
+      {body}
       <hr />
       <div style="width: 100%;">
         <div style="width: 50%; padding: 6px; display: inline;">
@@ -144,7 +176,6 @@ fn app() -> Html {
         </div>
       </div>
       <div>
-
         <table style="border: 2px; border-color: white;">
           <tr>
             <td>{"Data State"}</td>

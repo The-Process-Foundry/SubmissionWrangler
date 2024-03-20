@@ -5,13 +5,15 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-// mod graph_db;
-
 use tauri::Manager;
 use tokio::sync::mpsc;
 use tokio::sync::Mutex;
 use tracing::info;
-use tracing_subscriber;
+
+mod graph_db;
+use graph_db::{Neo4jConfig, Neo4jConnection};
+
+// Create a connection to the Neo4j server
 
 struct AsyncProcInputTx {
   inner: Mutex<mpsc::Sender<String>>,
@@ -24,7 +26,7 @@ fn rs2js<R: tauri::Runtime>(message: String, manager: &impl Manager<R>) {
     .unwrap();
 }
 
-/// Receive a message from the client and spawns
+/// Receive a message from the client and forwards it along to the server side
 #[tauri::command]
 async fn call_server(
   message: String,
@@ -50,6 +52,23 @@ async fn async_process_model(
   Ok(())
 }
 
+// Connect to the Neo4j database
+async fn db_connect() -> core::result::Result<Neo4jConnection, String> {
+  // A singleton workspace shared by the entire Tauri App
+  // let workspace = Workspace::init(WorkspaceConfig::Default());
+  let graph_config = Neo4jConfig {
+    uri: "localhost:7687".to_string(),
+    username: "neo4j".to_string(),
+    password: "neo_pass".to_string(),
+  };
+
+  let conn = Neo4jConnection::connect(graph_config).await?;
+  conn.ping().await?;
+
+  // Ping the connection to ensure it works
+  Ok(conn)
+}
+
 fn main() {
   tracing_subscriber::fmt::init();
 
@@ -70,12 +89,16 @@ fn main() {
         window.close_devtools();
       }
 
+      // Listen for
       tauri::async_runtime::spawn(async move {
         async_process_model(async_proc_input_rx, async_proc_output_tx).await
       });
 
+      // Return the processed event to the frontend
       let app_handle = app.handle();
       tauri::async_runtime::spawn(async move {
+        let _db_conn = db_connect().await.unwrap();
+
         loop {
           if let Some(output) = async_proc_output_rx.recv().await {
             rs2js(output, &app_handle);

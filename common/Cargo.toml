@@ -7,8 +7,13 @@ version = "0.1.0"
 
 [dependencies]
 # String Guid generaters
-uuid = {version = "1.5.0", features = ["v4", "v5", "serde", "js"]}
+uuid = {version = "1.7.0", features = ["v4", "v5", "serde", "js"]}
 
-# raw http tools
-http = "0.2.9"
+# raw http tools. 1.0.0 is not compatible with other items
+http = "1.1.0"
 
+# A bare bones requirement for tokio to capture the error messages
+# tokio = "1.34.0"
+
+# Graph database driver for Neo4j
+# neo4rs = "0.6.2"

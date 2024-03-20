@@ -9,15 +9,15 @@ Manage submissions for a veterinary pathologist.
 The client is the web interface. It is a React style single page app using Yew and compiled into
 WebAssembly.
 
-- Assets - Static files which are copied over into production without modification (raw JS, css,
+- Assets - Static files that are copied over into production without modification (raw JS, CSS,
   images, etc)
-- Components - Reusable widgets that may be exported as their own project at some point.
+- Components - Reusable widgets that may be exported as an external project at some point.
 - Pages -
 
 ### Server
 
 This is a backend that handles creating aggregate data, viewing the local file system, and other
-tools that are not available in a web page
+tools that are not available in a web browser sandbox.
 
 ### Common
 
@@ -29,9 +29,8 @@ This contains the glue code for packaging the Server and UI into an installable 
 
 ### Libraries
 
-Rust libraries/macros that should eventually given their own repo. These should be
-[submodules|https://github.blog/2016-02-01-working-with-submodules/] once they are mapped to their
-own repo. As Rust is a young language, having local forks of trunk for some of the projects used
+Rust libraries/macros that are being incubated for becoming stand-alone projects. Each should use
+[submodules|https://github.blog/2016-02-01-working-with-submodules/] once they are spun off to their own repo. As Rust is a young language, having local forks of Trunk for some of the projects used
 can be useful to drive PRs for items not owned by the Process Foundry.
 
 - Grapht: An in-memory graph database that can be queried using the OpenCypher/GQL syntax
@@ -79,6 +78,6 @@ Later:
   - Tabular: Built-in table view for browsing the item
   - Editable: Built-in edit view
 - Edit component - popup window for editing embedded objects. It should be able to use breadcrumbs
-  in order to edit complex objects (eg. add a new address/contact from the edit page)
+  when editing complex objects (eg. add a new address/contact from the edit page)
 
 - NEO4J instance Password: BPcl3-UgbrW3FM9-Ovn7pCe0XcNwe1u4YqZ4cTIcBXs

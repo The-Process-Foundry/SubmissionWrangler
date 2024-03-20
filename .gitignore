@@ -22,3 +22,5 @@ client/dist
 /*.iml
 /.idea
 
+# Binaries that are downloaded/compiled locally
+/bin

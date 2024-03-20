@@ -12,14 +12,14 @@ wrangler-common = {path="../common"}
 
 yew = {version = "0.21", features = ["csr"]}
 
-js-sys = "0.3.65"
+js-sys = "0.3.69"
 
-wasm-bindgen = "0.2.88"
-wasm-bindgen-futures = "0.4.38"
+wasm-bindgen = "0.2.92"
+wasm-bindgen-futures = "0.4.42"
 
-web-sys = "0.3.65"
+web-sys = "0.3.69"
 
 tracing = "0.1.40"
 tracing-core = "0.1.32"
-tracing-subscriber = {version="0.3.17", features=["fmt", "time"]}
-tracing-web = "0.1.2"
+tracing-subscriber = {version="0.3.18", features=["fmt", "time"]}
+tracing-web = "0.1.3"

@@ -37,7 +37,7 @@ pub(crate) mod local {
   pub use super::errors::WranglerErrorKind::{self, *};
 
   // This will be split out into it's own crate
-  pub use crate::errors::AllWhat;
+  pub use crate::errors::{allwhat::ResultPlus, AllWhat};
 
   pub type Result<O> = core::result::Result<O, AllWhat<WranglerErrorKind>>;
 
