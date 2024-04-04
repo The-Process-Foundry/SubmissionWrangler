@@ -2,6 +2,7 @@
 
 use crate::local::*;
 
+use neo4rs::Row;
 use wrangler_common::{configuration::apps::neo4j::*, grapht::prelude::*};
 
 pub mod neo4j;
@@ -20,7 +21,9 @@ pub trait GraphDbConnection {
 
   async fn relate(&self, edge: Box<dyn GraphtEdge>) -> Result<()>;
 
-  async fn find(&self, query: String) -> Result<()>;
+  async fn exec(&self, query: String) -> Result<()>;
+
+  async fn find(&self, query: String) -> Result<Vec<Row>>;
 
   /// Check that a connection is up, running, and taking queries
   async fn ping(&self) -> Result<()>;

@@ -17,23 +17,22 @@ use wrangler_server::services::graph_db::{Driver, GraphDb};
 
 #[tokio::test]
 async fn happy_path() {
+  // // Clean up rogue pings
   // let graph = neo4rs::Graph::new("localhost:7687", "neo4j", "neo_pass")
   //   .await
   //   .unwrap();
   // let graph = graph.clone();
-  // tokio::spawn(async move {
-  //   println!("Calling the initial graph");
-  //   let mut result = graph
-  //     .execute(neo4rs::query("MATCH (p:Ping) RETURN p"))
-  //     .await
-  //     .unwrap();
+  // println!("Calling the initial graph to clean out the pings");
+  // let mut result = graph
+  //   .execute(neo4rs::query("MATCH (p:Ping) RETURN p"))
+  //   .await
+  //   .unwrap();
 
-  //   println!("Finished calling the initial graph");
-  //   while let Ok(Some(row)) = result.next().await {
-  //     let node: neo4rs::Node = row.get("p").unwrap();
-  //     // println!("{:#?}", node);
-  //   }
-  // });
+  // println!("Finished calling the initial graph");
+  // while let Ok(Some(row)) = result.next().await {
+  //   let node: neo4rs::Node = row.get("p").unwrap();
+  //   println!("{:#?}", node);
+  // }
 
   // Make the workspace
   // - Connect to the database

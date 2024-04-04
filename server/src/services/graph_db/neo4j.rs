@@ -59,8 +59,18 @@ impl GraphDbConnection for Neo4jConnection {
     todo!()
   }
 
+  async fn exec(&self, query_str: String) -> AWResult<()> {
+    let graph = self.graph.clone();
+
+    println!("Exec query: {:#?}", query_str);
+    let q = query(&query_str);
+    let mut res = graph.execute(q).await.unwrap();
+    println!("Exec returned: {:?}", &res.next().await);
+    Ok(())
+  }
+
   // A simple query to return a list of matching nodes
-  async fn find(&self, search: String) -> AWResult<()> {
+  async fn find(&self, search: String) -> AWResult<Vec<Row>> {
     let graph = self.graph.clone();
     let search = search.clone();
     println!(
@@ -68,22 +78,49 @@ impl GraphDbConnection for Neo4jConnection {
       search
     );
 
-    println!("Inside the async");
     let q = query(&search);
     let mut result = graph.execute(q).await.unwrap();
-    println!("Received a result");
+    let mut rows = vec![];
     while let Ok(Some(row)) = result.next().await {
       let node: Node = row.get("p").unwrap();
       println!("Got a node: {:?}", node);
+      rows.append(&mut vec![row]);
     }
-
-    println!("Post spawn");
-    Ok(())
+    Ok(rows)
   }
 
   async fn ping(&self) -> AWResult<()> {
     println!("In the GraphDbConnection.ping function");
-    self.find("MATCH (p:Ping) RETURN p".to_string()).await
+
+    // Make a new ping ID to verify read/write works
+    let ping_id = uuid::Uuid::new_v4();
+    let query = format!("MATCH (p:PING WHERE p.guid = '{}') RETURN p", ping_id);
+
+    // Check there are no pings with this id
+    let initial = self.find(query.clone()).await?;
+    match initial.len() {
+      0 => (),
+      _ => panic!("This should not exist yet"),
+    };
+
+    // Insert the ping and set it to have the new guid
+    let upsert = format!(
+      "MERGE (p:PING) ON CREATE SET p.guid = '{}' ON MATCH SET p.guid = '{}'",
+      ping_id, ping_id
+    );
+    let _ = self.exec(upsert).await?;
+
+    // Verify there is now a ping with that guid
+    let initial = self.find(query).await?;
+    match initial.len() {
+      1 => (),
+      x => panic!(
+        "There should be exactly one ping with guid {}, but found {}",
+        ping_id, x
+      ),
+    };
+
+    Ok(())
   }
 }
 
