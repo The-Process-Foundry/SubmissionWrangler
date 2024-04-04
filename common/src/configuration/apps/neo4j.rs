@@ -33,6 +33,10 @@ impl Neo4jConfig {
   pub fn get_password(&self) -> Password {
     self.password.clone()
   }
+
+  pub fn retrieve(&self) -> Result<()> {
+    Ok(())
+  }
 }
 
 // Set the default for localhos

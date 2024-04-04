@@ -5,16 +5,25 @@ use crate::local::*;
 use wrangler_common::{configuration::apps::neo4j::*, grapht::prelude::*};
 
 pub mod neo4j;
+mod ping;
+mod gql;
+
 use neo4j::Neo4jConnection;
+
+/// A model that can be serialized/deserialized into the graph
+pub trait Grapht {}
 
 /// A common interface tha all Graph Databases are expected to implement. It is meant to grab a
 /// connection from a backend pool.
 pub trait GraphDbConnection {
-  fn create(&self, node: Box<dyn GraphtNode>) -> Result<()>;
+  async fn create(&self, node: Box<dyn GraphtNode>) -> Result<()>;
 
-  fn relate(&self, edge: Box<dyn GraphtEdge>) -> Result<()>;
+  async fn relate(&self, edge: Box<dyn GraphtEdge>) -> Result<()>;
 
-  fn find(&self, query: &str);
+  async fn find(&self, query: String) -> Result<()>;
+
+  /// Check that a connection is up, running, and taking queries
+  async fn ping(&self) -> Result<()>;
 }
 
 /// How to create a specific connection value based on a config
@@ -22,9 +31,13 @@ pub trait GraphDbDriver {
   type Connection: GraphDbConnection;
 
   /// Initialize a connection pool and verify the driver settings
-  fn connect(&self, db_name: &str) -> Result<()>;
+  fn init(&self) -> Result<()>;
 
-  fn get_connection(&self) -> Result<Self::Connection>;
+  // Open a connection to a specific graph in the database
+  fn get_connection(&self, db_name: &str) -> Result<Self::Connection>;
+
+  /// A simple check to make sure the connection is up and running
+  fn ping(&self) -> Result<()>;
 }
 
 /// An enumeration of all the implemented graph database drivers
@@ -39,7 +52,7 @@ impl Driver {
   /// Initialize a connection pool for the given driver, targeting the specific database name
   fn connect(&self, db_name: &str) -> Result<Neo4jConnection> {
     match self {
-      Driver::Neo4j(driver) => driver.connect(db_name),
+      Driver::Neo4j(driver) => driver.get_connection(db_name),
     }
   }
 }
@@ -51,7 +64,6 @@ impl Default for Driver {
 }
 
 /// A generic interface for interacting with a single graph.
-#[derive(Clone)]
 pub struct GraphDb {
   /// Configuration for the database
   driver: Driver,
@@ -68,12 +80,48 @@ pub struct GraphDb {
 
 impl GraphDb {
   /// Create a connection pool if it doesn't already exist
-  pub fn init(&mut self) -> Result<()> {
+  async fn init(&mut self) -> Result<()> {
+    // Open the connection
     self.connection = Some(self.driver.connect(&self.db_name)?);
+
+    // Test the connection with a ping
+    println!("Running GraphDb::init ping");
+    self.ping().await?;
     Ok(())
   }
 
-  pub fn query(&self) -> Result<()> {
+  /// Creates a frontend for communicating with a graph database
+  pub async fn open(driver: Driver, graph_name: &str) -> Result<GraphDb> {
+    let mut graph = GraphDb {
+      driver,
+      connection: None,
+      db_name: graph_name.to_string(),
+    };
+
+    graph.init().await?;
+
+    Ok(graph)
+  }
+
+  /// Send a trivial create/retrieve to the backend database to ensure the connection is alive and
+  /// functioning properly
+  pub async fn ping(&self) -> Result<()> {
+    if let Some(conn) = &self.connection {
+      println!("In the GraphDb::ping function");
+      conn.ping().await
+    } else {
+      panic!("Tried to ping before creating the connection")
+    }
+
+    // Query the ping singleton.
+
+    // Upsert a ping with a new uuid
+    // Query the ping singleton and ensure it has the new uuid
+  }
+
+  /// Takes a raw query string and executes it. This is done synchronously and the result is not returned.
+  pub async fn exec(&self, query: &str) -> Result<()> {
+    println!("Executing query: {}", query);
     Ok(())
   }
 }

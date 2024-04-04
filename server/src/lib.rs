@@ -5,11 +5,11 @@
 
 // pub mod endpoint
 
-// configuration for pointing to various items
+// configuration for pointing to various APIs
 pub mod services;
 
 // Configuration items
-pub mod workspace;
+// pub mod workspace;
 
 pub mod local {
   pub use core::fmt;
@@ -19,5 +19,5 @@ pub mod local {
 
 /// Expose a subset of the system to users of the library
 pub mod prelude {
-  pub use super::workspace::*;
+  // pub use super::workspace::*;
 }

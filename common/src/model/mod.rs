@@ -1,5 +1,7 @@
 //! The shape and relationship of application data
 
+use std::{collections::HashMap, sync::Arc};
+
 pub trait Unwrapable: std::fmt::Debug + Clone {
   /// A generic unwrap function to convert single item enum value into the inner value
   fn unwrap<Value>(&self) -> Value;
@@ -37,10 +39,56 @@ pub enum ModelEdge {
   OrganizationParent,
 }
 
+pub enum ModelPart {
+  Node(ModelNode),
+  Edge(ModelEdge),
+}
+
 /// Containers for the objects defined in by the model
 pub enum ModelValue {
-  Organizations(Vec<Organization>),
-  OrganizationParent(Organization, Organization),
+  Organization(Arc<Organization>),
+  OrganizationParent(Arc<Organization>, Arc<Organization>),
+}
+
+/// Contain all the instances of a given type of node
+pub struct ModelNodes<T>
+where
+  T: Accessible,
+{
+  lookup: HashMap<uuid::Uuid, Arc<T>>,
+}
+
+impl<T> ModelNodes<T>
+where
+  T: Accessible,
+{
+  pub fn list(&self) -> Vec<Arc<T>> {
+    self
+      .lookup
+      .values()
+      .map(|node: &Arc<T>| node.clone())
+      .collect()
+  }
+}
+
+/// This is a local copy of the graph. Could be Grapht
+pub struct SubmissionLog {
+  organizations: ModelNodes<Organization>,
+}
+
+impl SubmissionLog {
+  pub fn list(&self, part: ModelPart) -> Vec<ModelValue> {
+    match part {
+      ModelPart::Node(ModelNode::Organization) => self
+        .organizations
+        .list()
+        .iter()
+        .map(|org| ModelValue::Organization(org.clone()))
+        .collect(),
+      ModelPart::Node(_) => todo!("Can only list Organizations so far"),
+      ModelPart::Edge(_) => todo!("Cannot list edges yet"),
+    }
+  }
 }
 
 /// Items used in the majority of model objects
