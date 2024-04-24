@@ -3,7 +3,7 @@
 //! This integration test emulates the calls that a GUI might make as a user enters a submission
 //! from a clean install
 
-use wrangler_common::{configuration::apps::neo4j::*, model::SubmissionLog};
+use wrangler_common::configuration::apps::neo4j::*;
 use wrangler_server::services::graph_db::{Driver, GraphDb};
 
 // fn workspace_init() {
@@ -41,14 +41,7 @@ async fn happy_path() {
     Err(err) => panic!("Failed to make the Neo4jConfig driver:\n{:#?}", err),
   };
 
-  let graph = GraphDb::open(driver, "HappyPathTest").await.unwrap();
-
-  // // Directly test ping
-  // let _ping_id = uuid::Uuid::new_v4();
-
-  // // Retrieve all ping (count should be 0 or 1)
-  // println!("\nAbout to test the ping");
-  // graph.ping().unwrap();
+  let _graph = GraphDb::open(driver, "HappyPathTest").await.unwrap();
 
   // Retrieve all the organizations
 

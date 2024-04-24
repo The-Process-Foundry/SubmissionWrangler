@@ -11,6 +11,7 @@ pub use views::organization::*;
 /// Messages that can be sent to the server for processing
 #[derive(Debug, Clone)]
 enum Call {
+  Ping,
   LoadCSV,
   QueryAll,
 }
@@ -52,6 +53,10 @@ impl AppState {
   /// Perform an update on the state based on the info contained in the call
   pub fn call(self, call: Call) -> Self {
     let new_state = match call {
+      Call::Ping => {
+        info!("Calling Ping from JS");
+        self
+      }
       Call::LoadCSV => AppState {
         data_graph: "Loading CSV ...".to_string(),
         ..self

@@ -3,7 +3,6 @@
 use futures::executor;
 
 use super::{GraphDbConnection, GraphDbDriver};
-use crate::local::*;
 use wrangler_common::{configuration::apps::neo4j::*, prelude::Result as AWResult};
 
 // use futures::stream::*;
@@ -45,14 +44,14 @@ impl Neo4jConnection {
 impl Neo4jConnection {}
 
 impl GraphDbConnection for Neo4jConnection {
-  async fn create(
+  async fn _create(
     &self,
     _node: Box<dyn wrangler_common::grapht::prelude::GraphtNode>,
   ) -> AWResult<()> {
     todo!()
   }
 
-  async fn relate(
+  async fn _relate(
     &self,
     _edge: Box<dyn wrangler_common::grapht::prelude::GraphtEdge>,
   ) -> AWResult<()> {
@@ -127,7 +126,7 @@ impl GraphDbConnection for Neo4jConnection {
 impl GraphDbDriver for Neo4jConfig {
   type Connection = Neo4jConnection;
 
-  fn init(&self) -> AWResult<()> {
+  fn _init(&self) -> AWResult<()> {
     todo!("GraphDbDriver::init for Neo4jConfig")
   }
 
@@ -136,7 +135,7 @@ impl GraphDbDriver for Neo4jConfig {
     Ok(conn)
   }
 
-  fn ping(&self) -> AWResult<()> {
+  fn _ping(&self) -> AWResult<()> {
     let conn = self.get_connection("PingTest")?;
     futures::executor::block_on(conn.ping())
   }

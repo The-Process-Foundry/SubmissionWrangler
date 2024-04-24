@@ -37,7 +37,7 @@ This contains the glue code for packaging the Server and UI into an installable 
 ### Libraries
 
 Rust libraries/macros that are being incubated for becoming stand-alone projects. Each should use
-[submodules|https://github.blog/2016-02-01-working-with-submodules/] once they are spun off to their own repo. As Rust is a young language, having local forks of Trunk for some of the projects used
+[submodules|https://github.blog/2016-02-01-working-with-submodules/] once they are spun off to their repo. As Rust is a young language, having local forks of Trunk for some of the projects used
 can be useful to drive PRs for items not owned by the Process Foundry.
 
 - Grapht: An in-memory graph database that can be queried using the OpenCypher/GQL syntax

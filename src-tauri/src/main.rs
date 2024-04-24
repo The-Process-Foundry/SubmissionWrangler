@@ -6,17 +6,13 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use tauri::Manager;
-use tokio::sync::mpsc;
-use tokio::sync::Mutex;
-use tracing::info;
+use tokio::sync::{mpsc, Mutex};
+use tracing::{info, warn};
 
-mod graph_db;
-use graph_db::{Neo4jConfig, Neo4jConnection};
+use wrangler_server::prelude::*;
 
-// Create a connection to the Neo4j server
-
-struct AsyncProcInputTx {
-  inner: Mutex<mpsc::Sender<String>>,
+struct State {
+  input_channel: Mutex<mpsc::Sender<String>>,
 }
 
 fn rs2js<R: tauri::Runtime>(message: String, manager: &impl Manager<R>) {
@@ -26,59 +22,63 @@ fn rs2js<R: tauri::Runtime>(message: String, manager: &impl Manager<R>) {
     .unwrap();
 }
 
-/// Receive a message from the client and forwards it along to the server side
+/// Receive a message from the client and forwards it along to the server side. Messages are passed
+/// along serialized, leaving it to the server to fully process them.
 #[tauri::command]
-async fn call_server(
-  message: String,
-  state: tauri::State<'_, AsyncProcInputTx>,
-) -> Result<(), String> {
+async fn call_server(message: String, state: tauri::State<'_, State>) -> Result<(), String> {
   info!(?message, "Received tauri::command: call_server");
-  let async_proc_input_tx = state.inner.lock().await;
-  async_proc_input_tx
-    .send(message)
-    .await
-    .map_err(|e| e.to_string())
+
+  // Send it to the server
+  let async_proc_input_tx = state.input_channel.lock().await;
+
+  // Forward the message along to the listener
+  async_proc_input_tx.send(message).await.map_err(|e| {
+    let msg = e.to_string();
+    warn!("call_server - error with input_channel lock:\n\t{}", e);
+    msg
+  })
 }
 
-async fn async_process_model(
+/// An asynchronous loop to listen for new messages. When one is received, is processes it via the
+/// handler.
+async fn listen(
   mut input_rx: mpsc::Receiver<String>,
   output_tx: mpsc::Sender<String>,
+  server: Server,
 ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+  info!(
+    "Starting the listen. The sockets are not closed: {}, {}",
+    input_rx.is_closed(),
+    output_tx.is_closed()
+  );
   while let Some(input) = input_rx.recv().await {
-    let output = input;
+    if input == "Halt" {
+      warn!("App Listener received a halt command. Shutting down now");
+      break;
+    }
+    info!("App.listener received a message: {}", input);
+    let output = server.handle(input).await;
     output_tx.send(output).await?;
   }
 
   Ok(())
 }
 
-// Connect to the Neo4j database
-async fn db_connect() -> core::result::Result<Neo4jConnection, String> {
-  // A singleton workspace shared by the entire Tauri App
-  // let workspace = Workspace::init(WorkspaceConfig::Default());
-  let graph_config = Neo4jConfig {
-    uri: "localhost:7687".to_string(),
-    username: "neo4j".to_string(),
-    password: "neo_pass".to_string(),
-  };
-
-  let conn = Neo4jConnection::connect(graph_config).await?;
-  conn.ping().await?;
-
-  // Ping the connection to ensure it works
-  Ok(conn)
-}
-
 fn main() {
   tracing_subscriber::fmt::init();
 
-  let (async_proc_input_tx, async_proc_input_rx) = mpsc::channel(1);
-  let (async_proc_output_tx, mut async_proc_output_rx) = mpsc::channel(1);
+  // Create sockets for communicating between the client and server
+  let (input_sender, input_receiver) = mpsc::channel(1);
+  let (output_sender, mut output_receiver) = mpsc::channel(1);
+
+  info!("Input sender is closed: {}", input_sender.is_closed());
+  // Initialize a singleton server
+  let server = Server::create();
 
   // Integrate with tokio: https://rfdonnelly.github.io/posts/tauri-async-rust-process/
   tauri::Builder::default()
-    .manage(AsyncProcInputTx {
-      inner: Mutex::new(async_proc_input_tx),
+    .manage(State {
+      input_channel: Mutex::new(input_sender),
     })
     .setup(|app| {
       // Automatically open the chrome dev-tools when building locally
@@ -89,18 +89,28 @@ fn main() {
         window.close_devtools();
       }
 
-      // Listen for
-      tauri::async_runtime::spawn(async move {
-        async_process_model(async_proc_input_rx, async_proc_output_tx).await
-      });
+      info!(
+        "Inside the setup. input is closed: {}",
+        input_receiver.is_closed()
+      );
+      // Kick off the listener
+      tauri::async_runtime::spawn(
+        async move { listen(input_receiver, output_sender, server).await },
+      );
+
+      // tauri::async_runtime::spawn(async move {
+      //   async_process_model(async_proc_input_rx, async_proc_output_tx).await
+      // });
 
       // Return the processed event to the frontend
       let app_handle = app.handle();
       tauri::async_runtime::spawn(async move {
-        let _db_conn = db_connect().await.unwrap();
-
+        info!(
+          "Replying to the json. The output channel is closed: {}",
+          output_receiver.is_closed()
+        );
         loop {
-          if let Some(output) = async_proc_output_rx.recv().await {
+          if let Some(output) = output_receiver.recv().await {
             rs2js(output, &app_handle);
           }
         }

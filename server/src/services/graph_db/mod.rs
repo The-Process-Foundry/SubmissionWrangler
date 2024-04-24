@@ -16,10 +16,10 @@ pub trait Grapht {}
 
 /// A common interface tha all Graph Databases are expected to implement. It is meant to grab a
 /// connection from a backend pool.
-pub trait GraphDbConnection {
-  async fn create(&self, node: Box<dyn GraphtNode>) -> Result<()>;
+pub(crate) trait GraphDbConnection {
+  async fn _create(&self, node: Box<dyn GraphtNode>) -> Result<()>;
 
-  async fn relate(&self, edge: Box<dyn GraphtEdge>) -> Result<()>;
+  async fn _relate(&self, edge: Box<dyn GraphtEdge>) -> Result<()>;
 
   async fn exec(&self, query: String) -> Result<()>;
 
@@ -30,17 +30,17 @@ pub trait GraphDbConnection {
 }
 
 /// How to create a specific connection value based on a config
-pub trait GraphDbDriver {
+pub(crate) trait GraphDbDriver {
   type Connection: GraphDbConnection;
 
   /// Initialize a connection pool and verify the driver settings
-  fn init(&self) -> Result<()>;
+  fn _init(&self) -> Result<()>;
 
   // Open a connection to a specific graph in the database
   fn get_connection(&self, db_name: &str) -> Result<Self::Connection>;
 
   /// A simple check to make sure the connection is up and running
-  fn ping(&self) -> Result<()>;
+  fn _ping(&self) -> Result<()>;
 }
 
 /// An enumeration of all the implemented graph database drivers

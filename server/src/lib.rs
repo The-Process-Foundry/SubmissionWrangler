@@ -11,6 +11,8 @@ pub mod services;
 // Configuration items
 // pub mod workspace;
 
+pub mod server;
+
 pub mod local {
   pub use core::fmt;
 
@@ -19,5 +21,6 @@ pub mod local {
 
 /// Expose a subset of the system to users of the library
 pub mod prelude {
+  pub use super::server::*;
   // pub use super::workspace::*;
 }
