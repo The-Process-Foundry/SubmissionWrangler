@@ -53,10 +53,7 @@ impl AppState {
   /// Perform an update on the state based on the info contained in the call
   pub fn call(self, call: Call) -> Self {
     let new_state = match call {
-      Call::Ping => {
-        info!("Calling Ping from JS");
-        self
-      }
+      Call::Ping => self,
       Call::LoadCSV => AppState {
         data_graph: "Loading CSV ...".to_string(),
         ..self
@@ -68,13 +65,15 @@ impl AppState {
     };
 
     spawn_local(async move {
-      let call_str = format!("{:?}", call);
+      let call_str = format!("\"{:?}\"", call);
       info!("Spawned the call with a thunk: {:?}", call_str);
-      let result = match glue::call_server(call_str).await {
+      let called = glue::call_server(call_str).await;
+      info!("Server replied with: '{:#?}'", called);
+      let result = match called {
         Ok(result) => AppAction::Thunk(format!("Received a call result: {:?}", result)),
         Err(err) => AppAction::Thunk(format!("Call failed in the end with error: {:?}", err)),
       };
-      info!("Completed call. Sending thunk: {:?}", result);
+      info!("Completed call. Sending result: {:?}", result);
     });
 
     new_state
@@ -102,8 +101,6 @@ impl Reducible for AppState {
   type Action = AppAction;
 
   fn reduce(self: Rc<Self>, action: Self::Action) -> Rc<Self> {
-    info!("Running the AppState Reducer for action: {:?}", action);
-
     let current_state = self.as_ref().clone();
     let new_state = match action {
       AppAction::CallServer(call) => current_state.call(call),
@@ -146,12 +143,10 @@ mod logger {
 /// The application root
 #[function_component(App)]
 fn app() -> Html {
-  info!("Initializing the AppState");
   let state = use_reducer(AppState::default);
 
   let clicked = |call: Call| {
     let state = state.clone();
-    info!("Initializing the callback for call: {:?}", call);
 
     Callback::from(move |_e: MouseEvent| {
       let call = call.clone();
@@ -165,7 +160,6 @@ fn app() -> Html {
     PageView::Organizations => html! {<OrgGrid></OrgGrid>},
   };
 
-  info!("Rendering the App");
   html! {
     <div style="width: 100%;">
       <h1>{ "Welcome to the Submission Wrangler" }</h1>
@@ -173,6 +167,9 @@ fn app() -> Html {
       {body}
       <hr />
       <div style="width: 100%;">
+        <div style="width: 50%; padding: 6px; display: inline;">
+          <button onclick={clicked(Call::Ping)}>{"Ping"}</button>
+        </div>
         <div style="width: 50%; padding: 6px; display: inline;">
           <button onclick={clicked(Call::LoadCSV)}>{"Load CSV"}</button>
         </div>

@@ -16,10 +16,8 @@ struct State {
 }
 
 fn rs2js<R: tauri::Runtime>(message: String, manager: &impl Manager<R>) {
-  info!(?message, "Replying using rs2js:");
-  manager
-    .emit_all("rs2js", format!("rs: {}", message))
-    .unwrap();
+  info!(?message, "Replying using server_reply event:");
+  manager.emit_all("server_reply", message).unwrap();
 }
 
 /// Receive a message from the client and forwards it along to the server side. Messages are passed
@@ -46,11 +44,6 @@ async fn listen(
   output_tx: mpsc::Sender<String>,
   server: Server,
 ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
-  info!(
-    "Starting the listen. The sockets are not closed: {}, {}",
-    input_rx.is_closed(),
-    output_tx.is_closed()
-  );
   while let Some(input) = input_rx.recv().await {
     if input == "Halt" {
       warn!("App Listener received a halt command. Shutting down now");
@@ -71,7 +64,6 @@ fn main() {
   let (input_sender, input_receiver) = mpsc::channel(1);
   let (output_sender, mut output_receiver) = mpsc::channel(1);
 
-  info!("Input sender is closed: {}", input_sender.is_closed());
   // Initialize a singleton server
   let server = Server::create();
 
@@ -89,10 +81,6 @@ fn main() {
         window.close_devtools();
       }
 
-      info!(
-        "Inside the setup. input is closed: {}",
-        input_receiver.is_closed()
-      );
       // Kick off the listener
       tauri::async_runtime::spawn(
         async move { listen(input_receiver, output_sender, server).await },
@@ -105,10 +93,6 @@ fn main() {
       // Return the processed event to the frontend
       let app_handle = app.handle();
       tauri::async_runtime::spawn(async move {
-        info!(
-          "Replying to the json. The output channel is closed: {}",
-          output_receiver.is_closed()
-        );
         loop {
           if let Some(output) = output_receiver.recv().await {
             rs2js(output, &app_handle);

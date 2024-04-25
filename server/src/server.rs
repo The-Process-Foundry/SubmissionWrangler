@@ -1,8 +1,9 @@
 //! A singleton object to control IO to and from the client
 
-use tracing::info;
+use serde::{Deserialize, Serialize};
+use tracing::{error, info};
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub enum Request {
   /// Stops the server from receiving any further calls
   Halt,
@@ -10,10 +11,12 @@ pub enum Request {
   Ping,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub enum Response {
   /// The response from a heartbeat call
   Pong,
+
+  Error(String),
 }
 
 /// The server acts as a singleton context for handling requests and returning responses. It
@@ -25,18 +28,23 @@ impl Server {
     Server {}
   }
 
+  fn ping(&self) -> String {
+    "Pong".to_string()
+  }
+
   // Handler for incoming messages. This should return a response as quickly as possible. Any
   // long-running processes should be spawned off and an identifier for the process should be
   // returned instead of the final value.
   pub async fn handle(&self, request: String) -> String {
-    info!("In the handler with request {}", request);
+    info!("In the handler with request '{}'", request);
 
     // Deserialize the request
-    // Forward the request to the proper service
-    match &request[..] {
-      "Ping" => "Pong".to_string(),
-      "Halt" => "Stopping".to_string(),
-      _ => todo!("This should not be necessary once the request is deserialized instead of a direct string match")
+    match serde_json::from_str(&request) {
+      Ok(req) => match req {
+        Request::Ping => self.ping(),
+        Request::Halt => "Stopping".to_string(),
+      },
+      Err(err) => format!("Request Deserialization Error: {}", err),
     }
   }
 }
