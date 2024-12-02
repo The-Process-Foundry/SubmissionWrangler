@@ -1,19 +1,21 @@
-<!DOCTYPE html><html><head>
-    <meta charset="utf-8">
-    <title>Fishhead Labs Submission Wrangler New</title>
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Fishhead Labs Submission Wrangler</title>
 
-    <link rel="stylesheet" href="/input-a451bfd9201e5320.css" integrity="sha384-PfvEegGDqwCOpcSt2sTFpYZqCwJzW1eLtJ3wp8CLmld4Ff/Le6MJpgkIwdyroQWg">
-  
-<link rel="preload" href="/fhl-client-e0e04cf719c2ef75_bg.wasm" crossorigin="anonymous" integrity="sha384-GA5K9gAYL4tcY4+3lvGwV1io2NsuWelE5czvKewVRxg8ssGY9dc/7EmLDJOb7QuI" as="fetch" type="application/wasm">
-<link rel="modulepreload" href="/fhl-client-e0e04cf719c2ef75.js" crossorigin="anonymous" integrity="sha384-Ay0pmpix4xGMYeiCrE0y2z0ZZcgTkXmElKmDR7PzNeWY17TIh4qazc7YrUBMdUNr">
-<link rel="modulepreload" href="/snippets/fhl-client-6bddd4077bf29f08/public/glue.js" crossorigin="anonymous" integrity="sha384-Ush1bHpqK7obKnFke96KFdiaNwnqo0pPIDLiIGVt507dse/+Uve3WLhDH59w2EIC"></head>
+    <link rel="stylesheet" href="/input-a451bfd9201e5320.css" integrity="sha384&#x2D;PfvEegGDqwCOpcSt2sTFpYZqCwJzW1eLtJ3wp8CLmld4Ff&#x2F;Le6MJpgkIwdyroQWg"/>
+  <link rel="modulepreload" href="/fhl-client-5d620e3715e9b86e.js" crossorigin=anonymous integrity="sha384-QKfwqGtGwCFq8v30dt5k95N/+rNB5IlOK6RoZN1ccxU81MAf/VTA8y4T+v3U/Y3l"><link rel="modulepreload" href="/snippets/fhl-client-6bddd4077bf29f08/public/glue.js" crossorigin=anonymous integrity="sha384-Ush1bHpqK7obKnFke96KFdiaNwnqo0pPIDLiIGVt507dse/+Uve3WLhDH59w2EIC"><link rel="preload" href="/fhl-client-5d620e3715e9b86e_bg.wasm" crossorigin=anonymous integrity="sha384-qczytKy08szfnVcFNRnBu523jIS4s/ccDx+eahODBYHjsW7RRsz7GBCpQgBRkgDB" as="fetch" type="application/wasm"></head>
   <body>
+<script type="module" nonce="4qBJFa5D02UmGETknqqwiw==">
+import init, * as bindings from '/fhl-client-5d620e3715e9b86e.js';
+const wasm = await init({ module_or_path: '/fhl-client-5d620e3715e9b86e_bg.wasm' });
 
 
-<script type="module">
-import init, * as bindings from '/fhl-client-e0e04cf719c2ef75.js';
-init('/fhl-client-e0e04cf719c2ef75_bg.wasm');
 window.wasmBindings = bindings;
+
+
+dispatchEvent(new CustomEvent("TrunkApplicationStarted", {detail: {wasm}}));
 
 </script><script>"use strict";
 
@@ -144,4 +146,5 @@ window.wasmBindings = bindings;
     new Client(url).start();
 
 })()
-</script></body></html>
+</script></body>
+</html>

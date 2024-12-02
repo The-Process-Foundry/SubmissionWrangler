@@ -4,6 +4,12 @@
 
 use wasm_bindgen::prelude::*;
 
+#[wasm_bindgen]
+extern "C" {
+  #[wasm_bindgen(js_namespace = ["window", "__TAURI__", "core"])]
+  pub async fn invoke(cmd: &str, args: JsValue) -> JsValue;
+}
+
 #[wasm_bindgen(module = "/public/glue.js")]
 extern "C" {
   /// Send a request to the Tauri Server and expect an eventual response

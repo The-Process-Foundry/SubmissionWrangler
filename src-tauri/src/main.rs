@@ -5,9 +5,10 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use tauri::Manager;
+use tauri::{AppHandle, Emitter, Manager};
 use tokio::sync::{mpsc, Mutex};
 use tracing::{info, warn};
+use uuid::Uuid;
 
 use wrangler_server::prelude::*;
 
@@ -15,26 +16,33 @@ struct State {
   input_channel: Mutex<mpsc::Sender<String>>,
 }
 
-fn rs2js<R: tauri::Runtime>(message: String, manager: &impl Manager<R>) {
+fn rs2js(message: String, app: &AppHandle) {
   info!(?message, "Replying using server_reply event:");
-  manager.emit_all("server_reply", message).unwrap();
+  app.emit("server_reply", message).unwrap();
 }
 
 /// Receive a message from the client and forwards it along to the server side. Messages are passed
 /// along serialized, leaving it to the server to fully process them.
 #[tauri::command]
-async fn call_server(message: String, state: tauri::State<'_, State>) -> Result<(), String> {
-  info!(?message, "Received tauri::command: call_server");
+async fn call_server(args: String, state: tauri::State<'_, State>) -> Result<(), String> {
+  info!(?args, "Received tauri::command: call_server");
 
   // Send it to the server
   let async_proc_input_tx = state.input_channel.lock().await;
 
   // Forward the message along to the listener
-  async_proc_input_tx.send(message).await.map_err(|e| {
+  async_proc_input_tx.send(args).await.map_err(|e| {
     let msg = e.to_string();
     warn!("call_server - error with input_channel lock:\n\t{}", e);
     msg
   })
+}
+
+#[tauri::command]
+async fn call_run(args: String, state: tauri::State<'_, State>) -> Result<String, String> {
+  info!(?args, "Received call_run");
+  let guid = Uuid::new_v4();
+  Ok(guid.to_string())
 }
 
 /// An asynchronous loop to listen for new messages. When one is received, is processes it via the
@@ -51,6 +59,7 @@ async fn listen(
     }
     info!("App.listener received a message: {}", input);
     let output = server.handle(input).await;
+    info!("App.listener is returning message: {}", output);
     output_tx.send(output).await?;
   }
 
@@ -76,9 +85,9 @@ fn main() {
       // Automatically open the chrome dev-tools when building locally
       #[cfg(debug_assertions)]
       {
-        let window = app.get_window("main").unwrap();
-        window.open_devtools();
-        window.close_devtools();
+        // let window = app.get_window("main").unwrap();
+        // window.open_devtools();
+        // window.close_devtools();
       }
 
       // Kick off the listener
@@ -91,7 +100,7 @@ fn main() {
       // });
 
       // Return the processed event to the frontend
-      let app_handle = app.handle();
+      let app_handle = app.handle().clone();
       tauri::async_runtime::spawn(async move {
         loop {
           if let Some(output) = output_receiver.recv().await {
@@ -102,7 +111,7 @@ fn main() {
 
       Ok(())
     })
-    .invoke_handler(tauri::generate_handler![call_server])
+    .invoke_handler(tauri::generate_handler![call_server, call_run])
     .run(tauri::generate_context!())
     .expect("error while running tauri application");
 }

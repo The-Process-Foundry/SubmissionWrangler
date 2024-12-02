@@ -1,58 +1,51 @@
 {
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "fhl-wrangler",
+  "version": "0.1.0",
+  "identifier": "com.fhl-wrangler.app",
+
   "build": {
     "beforeBuildCommand": "cd client && trunk build",
     "beforeDevCommand": "cd client && trunk serve",
-    "devPath": "http://localhost:8080",
-    "distDir": "../client/dist",
-    "withGlobalTauri": true
+    "devUrl": "http://localhost:8080",
+    "frontendDist": "../client/dist"
   },
-  "package": {
-    "productName": "FHL_V2",
-    "version": "0.1.0"
+
+  "bundle": {
+    "active": true,
+    "category": "DeveloperTool",
+    "copyright": "",
+    "externalBin": [],
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "longDescription": "",
+    "macOS": {
+      "entitlements": null,
+      "exceptionDomain": "",
+      "frameworks": [],
+      "providerShortName": null,
+      "signingIdentity": null
+    },
+    "resources": [],
+    "shortDescription": "",
+    "targets": "all",
+    "windows": {
+      "certificateThumbprint": null,
+      "digestAlgorithm": "sha256",
+      "timestampUrl": ""
+    }
   },
-  "tauri": {
-    "allowlist": {
-      "all": false
-    },
-    "bundle": {
-      "active": true,
-      "category": "DeveloperTool",
-      "copyright": "",
-      "deb": {
-        "depends": []
-      },
-      "externalBin": [],
-      "icon": [
-        "icons/32x32.png",
-        "icons/128x128.png",
-        "icons/128x128@2x.png",
-        "icons/icon.icns",
-        "icons/icon.ico"
-      ],
-      "identifier": "com.tauri.dev",
-      "longDescription": "",
-      "macOS": {
-        "entitlements": null,
-        "exceptionDomain": "",
-        "frameworks": [],
-        "providerShortName": null,
-        "signingIdentity": null
-      },
-      "resources": [],
-      "shortDescription": "",
-      "targets": "all",
-      "windows": {
-        "certificateThumbprint": null,
-        "digestAlgorithm": "sha256",
-        "timestampUrl": ""
-      }
-    },
+  "app": {
+    "withGlobalTauri": true,
     "security": {
       "csp": null
     },
-    "updater": {
-      "active": false
-    },
+
     "windows": [
       {
         "fullscreen": false,

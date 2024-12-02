@@ -7,19 +7,22 @@ version = "2.0.0"
 
 [dependencies]
 # DTOs and common modeling for the wrangler
-wrangler-common = {path="../common"}
-
+wrangler-common = {path = "../common"}
 
 yew = {version = "0.21", features = ["csr"]}
 
-js-sys = "0.3.69"
+js-sys = "0.3.74"
 
-wasm-bindgen = "0.2.92"
-wasm-bindgen-futures = "0.4.42"
+wasm-bindgen = "0.2.97"
+wasm-bindgen-futures = "0.4.47"
 
-web-sys = "0.3.69"
+web-sys = "0.3.74"
 
-tracing = "0.1.40"
-tracing-core = "0.1.32"
-tracing-subscriber = {version="0.3.18", features=["fmt", "time"]}
+tracing = "0.1.41"
+tracing-core = "0.1.33"
+tracing-subscriber = {version = "0.3.19", features = ["fmt", "time"]}
 tracing-web = "0.1.3"
+
+serde-wasm-bindgen = "0.6.5"
+
+uuid = "1.11.0"
