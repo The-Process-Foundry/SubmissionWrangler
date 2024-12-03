@@ -9,11 +9,13 @@
 pub mod services;
 
 // Configuration items
-// pub mod workspace;
+pub mod workspace;
 
 pub mod server;
 
 pub mod longrunner;
+
+pub mod runners;
 
 pub mod local {
   pub use core::fmt;

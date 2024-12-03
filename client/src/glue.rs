@@ -10,13 +10,6 @@ extern "C" {
   pub async fn invoke(cmd: &str, args: JsValue) -> JsValue;
 }
 
-#[wasm_bindgen(module = "/public/glue.js")]
-extern "C" {
-  /// Send a request to the Tauri Server and expect an eventual response
-  #[wasm_bindgen(js_name = call_server, catch)]
-  pub async fn call_server(name: String) -> Result<JsValue, JsValue>;
-}
-
 // Direct access to console.log
 #[wasm_bindgen]
 extern "C" {

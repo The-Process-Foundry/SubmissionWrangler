@@ -1,9 +1,13 @@
 //! A rust implementation of the Wrangler server API spec
 
-use crate::longrunner::{LongRunnerRouter, LongRunnerTask};
 use serde::{Deserialize, Serialize};
+use std::sync::{Arc, RwLock};
+use tracing::info;
+
 // Database operations
 pub mod data;
+
+use crate::longrunner::{LongRunnerRouter, LongRunnerTask, TaskState};
 
 /// Asynchronous calls that should be handled by the LongRunner
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -20,7 +24,16 @@ impl LongRunnerRouter for LongRunnerCall {
 
   fn to_task(&self) -> Result<LongRunnerTask<LongRunnerCall>, String> {
     match self {
-      LongRunnerCall::ImportCSV => todo!(),
+      LongRunnerCall::ImportCSV => {
+        let guid = uuid::Uuid::new_v4();
+        info!("Received Import CSV call");
+        Ok(LongRunnerTask {
+          task_id: guid.clone(),
+          task_route: self.clone(),
+          task_params: String::new(),
+          state: Arc::new(RwLock::new(TaskState::new(guid))),
+        })
+      }
       LongRunnerCall::PrintInvoice => todo!("PrintInvoice task"),
     }
   }

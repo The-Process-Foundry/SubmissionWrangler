@@ -1,5 +1,4 @@
 version: "3.8"
-name: wrangler
 services:
   graph_db:
     image: neo4j:latest

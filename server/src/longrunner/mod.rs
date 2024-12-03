@@ -1,11 +1,11 @@
-use serde::{Deserialize, Serialize};
 use std::collections::{HashMap, VecDeque};
 use std::sync::{Arc, RwLock};
 use tokio::task::spawn;
 use tracing::{error, info};
 use uuid::Uuid;
 
-use wrangler_common::longrunner::{LongRunnerRouter, LongRunnerRun, LongRunnerTask, TaskStatus};
+use crate::workspace::Workspace;
+use wrangler_common::longrunner::{LongRunnerRouter, LongRunnerTask, TaskStatus};
 
 pub struct LongRunner<R>
 where
@@ -18,7 +18,9 @@ where
   /// A history of all the tasks, including queued.
   tasks: Arc<RwLock<HashMap<Uuid, Arc<RwLock<LongRunnerTask<R>>>>>>,
   /// A function used to send the task to the correct runner.
-  executor: Arc<dyn Fn(Arc<RwLock<LongRunnerTask<R>>>) + Send + Sync>,
+  executor: Arc<dyn Fn(Arc<RwLock<LongRunnerTask<R>>>, Workspace) + Send + Sync>,
+  /// A server context to be made available to each tasks
+  context: Workspace,
 }
 
 impl<R> LongRunner<R>
@@ -75,18 +77,23 @@ where
     let runner = self.executor.clone();
 
     // Change the task state to Running
+    info!("Reading the task");
     let reader = task.read().unwrap();
+    info!("Writing the state");
     let mut state = reader.state.write().unwrap();
+    info!("Updated the state to Paused");
     state.task_status = TaskStatus::Paused;
     let task_id = reader.task_id.clone();
     drop(state);
 
+    info!("Dropped state in start");
     let task = task.clone();
     let running = self.running.clone();
+    let ctx = self.context.clone();
 
     spawn(async move {
       // Send the task to the proper runner.
-      (runner.clone())(task.clone());
+      (runner.clone())(task.clone(), ctx);
 
       // Cleanup after the task.
       // Remove the task from the running hash.
@@ -116,32 +123,36 @@ where
       let task = self.dequeue();
       // Change the task state to Paused, as it's not running yet.
       let reader = task.read().unwrap();
+      let guid = reader.task_id;
       let mut state = reader.state.write().unwrap();
       state.task_status = TaskStatus::Paused;
+      drop(state);
 
       // Add the task to the "running" hashmap
       let mut running = self.running.write().unwrap();
-      let inner = task.read().unwrap();
-      let guid = inner.task_id;
       match running.insert(guid.clone(), task.clone()) {
         Some(_old) => {
-          panic!("Received repeat guid {}", inner.task_id)
+          panic!("Received repeat guid {}", guid)
         }
         None => (),
       }
-      drop(inner);
+      drop(running);
 
       self.start_task(task.clone());
     }
   }
 
-  pub fn new(executor: Arc<dyn Fn(Arc<RwLock<LongRunnerTask<R>>>) + Send + Sync>) -> LongRunner<R> {
+  pub fn new(
+    executor: Arc<dyn Fn(Arc<RwLock<LongRunnerTask<R>>>, Workspace) + Send + Sync>,
+    context: Workspace,
+  ) -> LongRunner<R> {
     {
       LongRunner {
         queue: Arc::new(RwLock::new(VecDeque::from([]))),
         running: Arc::new(RwLock::new(HashMap::new())),
         tasks: Arc::new(RwLock::new(HashMap::default())),
         executor,
+        context,
       }
     }
   }

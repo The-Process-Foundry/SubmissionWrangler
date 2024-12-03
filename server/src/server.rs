@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 use std::sync::{Arc, RwLock};
 use tracing::info;
 
-use crate::longrunner::LongRunner;
+use crate::{longrunner::LongRunner, workspace::Workspace};
 use wrangler_common::{calls::LongRunnerCall, longrunner::LongRunnerTask};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -23,25 +23,30 @@ pub enum Response {
   Error(String),
 }
 
-fn executor(task: Arc<RwLock<LongRunnerTask<LongRunnerCall>>>) {
-  let inner = task.read().unwrap();
-  match inner.task_route {
-    LongRunnerCall::ImportCSV => todo!(),
-    LongRunnerCall::PrintInvoice => todo!(),
-  }
-}
-
 /// The server acts as a singleton context for handling requests and returning responses. It
 /// includes managing all related services such as the LongRunner and the DB pool.
 pub struct Server {
   pub long_runner: LongRunner<LongRunnerCall>,
+  pub workspace: Workspace,
+}
+
+fn executor(task: Arc<RwLock<LongRunnerTask<LongRunnerCall>>>, ctx: Workspace) {
+  let inner = task.read().unwrap();
+  match inner.task_route {
+    LongRunnerCall::ImportCSV => crate::runners::import_csv::runner(inner.state.clone(), ctx),
+    LongRunnerCall::PrintInvoice => todo!(),
+  }
 }
 
 impl Server {
   pub fn create() -> Server {
     let executor = Arc::new(executor);
-    let long_runner = LongRunner::<LongRunnerCall>::new(executor);
-    Server { long_runner }
+    let workspace = Workspace::default();
+    let long_runner = LongRunner::<LongRunnerCall>::new(executor, workspace.clone());
+    Server {
+      long_runner,
+      workspace,
+    }
   }
 
   fn ping(&self) -> String {

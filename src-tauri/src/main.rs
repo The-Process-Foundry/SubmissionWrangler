@@ -46,18 +46,21 @@ async fn call_server(args: String, state: tauri::State<'_, State>) -> Result<(),
 
 /// Send a new task to the LongRunner to be queued up.
 #[tauri::command]
-async fn run(args: String, state: tauri::State<'_, State>) -> Result<String, String> {
-  info!(?args, "Received call_run");
+async fn call_run(args: String, state: tauri::State<'_, State>) -> Result<String, String> {
+  info!(?args, "Received run");
   let guid: Uuid;
 
   // Deserialize Args
   let args: Result<LongRunnerRun<LongRunnerCall>, _> = serde_json::from_str(&args);
   match args {
     Ok(call) => {
+      info!("Before task");
       let task = call.route.to_task().unwrap();
       guid = task.task_id;
       let server: Arc<Server> = state.server.clone();
+      info!("Enqueueing guid: {}", guid);
       server.long_runner.enqueue(task);
+      info!("After Enqueueing guid: {}", guid);
       Ok(())
     }
     Err(err) => {
@@ -65,7 +68,7 @@ async fn run(args: String, state: tauri::State<'_, State>) -> Result<String, Str
       Err(format!("Deserialization error: {}", err))
     }
   }?;
-
+  info!("Returning guid: {}", guid);
   Ok(guid.to_string())
 }
 
@@ -136,7 +139,7 @@ fn main() {
 
       Ok(())
     })
-    .invoke_handler(tauri::generate_handler![call_server, run])
+    .invoke_handler(tauri::generate_handler![call_server, call_run])
     .run(tauri::generate_context!())
     .expect("error while running tauri application");
 }

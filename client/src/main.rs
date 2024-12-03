@@ -7,6 +7,7 @@ use yew::prelude::*;
 pub(crate) mod glue;
 mod views;
 pub use views::organization::*;
+use wrangler_common::longrunner::LongRunnerRun;
 
 /// Messages that can be sent to the server for processing
 #[derive(Debug, Clone)]
@@ -171,7 +172,8 @@ fn app() -> Html {
         if ping_guid2 {
           info!("Ping info is currently nil");
           let mut args: HashMap<&str, String> = HashMap::new();
-          args.insert("args", "Dummy: call_str".to_string());
+          let runner = LongRunnerRun { route: "ImportCSV" };
+          args.insert("args", serde_json::to_string(&runner).unwrap());
           let args = serde_wasm_bindgen::to_value(&args).unwrap();
           info!("Sending args: {:?}", args);
           let new_msg = glue::invoke("call_run", args).await.as_string().unwrap();

@@ -11,10 +11,19 @@ use neo4rs::*;
 use std::sync::Arc;
 // use uuid::Uuid;
 
+#[derive(Clone)]
 pub struct Neo4jConnection {
   // /// Tokio::Runtime - an async loop for temporarily making the connection synchronous.
   // rt: tokio::runtime::Runtime,
   graph: Arc<Graph>,
+}
+
+impl std::fmt::Debug for Neo4jConnection {
+  fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    f.debug_tuple("Graph")
+      .field(&"There is data somewhere")
+      .finish()
+  }
 }
 
 impl Neo4jConnection {

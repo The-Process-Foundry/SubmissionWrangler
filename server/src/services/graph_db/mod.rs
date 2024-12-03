@@ -67,6 +67,7 @@ impl Default for Driver {
 }
 
 /// A generic interface for interacting with a single graph.
+#[derive(Debug, Clone)]
 pub struct GraphDb {
   /// Configuration for the database
   driver: Driver,
