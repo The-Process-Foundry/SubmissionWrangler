@@ -5,15 +5,21 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use tauri::{AppHandle, Emitter, Manager};
+use std::sync::Arc;
+use tauri::{AppHandle, Emitter};
 use tokio::sync::{mpsc, Mutex};
 use tracing::{info, warn};
 use uuid::Uuid;
 
+use wrangler_common::{
+  calls::*,
+  longrunner::{LongRunnerRouter, LongRunnerRun},
+};
 use wrangler_server::prelude::*;
 
 struct State {
   input_channel: Mutex<mpsc::Sender<String>>,
+  server: Arc<Server>,
 }
 
 fn rs2js(message: String, app: &AppHandle) {
@@ -38,10 +44,28 @@ async fn call_server(args: String, state: tauri::State<'_, State>) -> Result<(),
   })
 }
 
+/// Send a new task to the LongRunner to be queued up.
 #[tauri::command]
-async fn call_run(args: String, state: tauri::State<'_, State>) -> Result<String, String> {
+async fn run(args: String, state: tauri::State<'_, State>) -> Result<String, String> {
   info!(?args, "Received call_run");
-  let guid = Uuid::new_v4();
+  let guid: Uuid;
+
+  // Deserialize Args
+  let args: Result<LongRunnerRun<LongRunnerCall>, _> = serde_json::from_str(&args);
+  match args {
+    Ok(call) => {
+      let task = call.route.to_task().unwrap();
+      guid = task.task_id;
+      let server: Arc<Server> = state.server.clone();
+      server.long_runner.enqueue(task);
+      Ok(())
+    }
+    Err(err) => {
+      guid = Uuid::nil();
+      Err(format!("Deserialization error: {}", err))
+    }
+  }?;
+
   Ok(guid.to_string())
 }
 
@@ -50,7 +74,7 @@ async fn call_run(args: String, state: tauri::State<'_, State>) -> Result<String
 async fn listen(
   mut input_rx: mpsc::Receiver<String>,
   output_tx: mpsc::Sender<String>,
-  server: Server,
+  server: Arc<Server>,
 ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
   while let Some(input) = input_rx.recv().await {
     if input == "Halt" {
@@ -74,12 +98,13 @@ fn main() {
   let (output_sender, mut output_receiver) = mpsc::channel(1);
 
   // Initialize a singleton server
-  let server = Server::create();
+  let server = Arc::new(Server::create());
 
   // Integrate with tokio: https://rfdonnelly.github.io/posts/tauri-async-rust-process/
   tauri::Builder::default()
     .manage(State {
       input_channel: Mutex::new(input_sender),
+      server: server.clone(),
     })
     .setup(|app| {
       // Automatically open the chrome dev-tools when building locally
@@ -111,7 +136,7 @@ fn main() {
 
       Ok(())
     })
-    .invoke_handler(tauri::generate_handler![call_server, call_run])
+    .invoke_handler(tauri::generate_handler![call_server, run])
     .run(tauri::generate_context!())
     .expect("error while running tauri application");
 }

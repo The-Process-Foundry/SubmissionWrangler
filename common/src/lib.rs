@@ -18,6 +18,9 @@ pub mod tools;
 // Database design
 pub mod grapht;
 
+// Asynchronous task management
+pub mod longrunner;
+
 // Import the most used definitions
 pub mod prelude {
   pub use super::{calls, configuration, errors, model};

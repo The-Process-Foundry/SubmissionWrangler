@@ -142,7 +142,7 @@ mod model {
   impl Invoice {
     pub fn add(&mut self, line_item: LineItem) -> Result<(), String> {
       self.balance += line_item.total();
-      self.items.add(line_item.guid, line_item);
+      self.items.insert(line_item.guid, Arc::new(line_item));
       Ok(())
     }
 
@@ -212,7 +212,7 @@ mod grapht {
           println!("{:#?}", err);
           panic!("Failed to insert everything")
         }
-        txn => Ok(()),
+        _txn => Ok(()),
       } //or txn.rollback().await.unwrap()
     }
 
@@ -242,7 +242,7 @@ use std::collections::HashMap;
 fn load_orgs(file_name: &str) -> HashMap<i32, reader::Organization> {
   // Create a CSV parser that reads data from stdin.
   let mut rdr = csv::ReaderBuilder::new()
-    .delimiter('\t' as u8)
+    .delimiter('.' as u8)
     .has_headers(true)
     .from_path(file_name)
     .unwrap();

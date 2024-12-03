@@ -13,6 +13,8 @@ pub mod services;
 
 pub mod server;
 
+pub mod longrunner;
+
 pub mod local {
   pub use core::fmt;
 

@@ -1,7 +1,11 @@
 //! A singleton object to control IO to and from the client
 
 use serde::{Deserialize, Serialize};
-use tracing::{error, info};
+use std::sync::{Arc, RwLock};
+use tracing::info;
+
+use crate::longrunner::LongRunner;
+use wrangler_common::{calls::LongRunnerCall, longrunner::LongRunnerTask};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub enum Request {
@@ -19,22 +23,34 @@ pub enum Response {
   Error(String),
 }
 
+fn executor(task: Arc<RwLock<LongRunnerTask<LongRunnerCall>>>) {
+  let inner = task.read().unwrap();
+  match inner.task_route {
+    LongRunnerCall::ImportCSV => todo!(),
+    LongRunnerCall::PrintInvoice => todo!(),
+  }
+}
+
 /// The server acts as a singleton context for handling requests and returning responses. It
-/// includes managing all related services
-pub struct Server {}
+/// includes managing all related services such as the LongRunner and the DB pool.
+pub struct Server {
+  pub long_runner: LongRunner<LongRunnerCall>,
+}
 
 impl Server {
   pub fn create() -> Server {
-    Server {}
+    let executor = Arc::new(executor);
+    let long_runner = LongRunner::<LongRunnerCall>::new(executor);
+    Server { long_runner }
   }
 
   fn ping(&self) -> String {
     "Pong".to_string()
   }
 
-  // Handler for incoming messages. This should return a response as quickly as possible. Any
-  // long-running processes should be spawned off and an identifier for the process should be
-  // returned instead of the final value.
+  /// Handler for incoming messages. This should return a response as quickly as possible. Any
+  /// long-running processes should be spawned off and an identifier for the process should be
+  /// returned instead of the final value.
   pub async fn handle(&self, request: String) -> String {
     info!("In the handler with request '{}'", request);
 
