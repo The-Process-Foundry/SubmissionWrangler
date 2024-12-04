@@ -24,6 +24,9 @@ pub trait Accessible {
 pub mod organization;
 use organization::Organization;
 
+pub mod address;
+use address::Address;
+
 /// Identifiers for the desired object defined in the model
 pub enum ModelNode {
   Organization,
