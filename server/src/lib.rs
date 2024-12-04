@@ -21,6 +21,8 @@ pub mod local {
   pub use core::fmt;
 
   pub use wrangler_common::prelude::*;
+
+  pub use tracing::{debug, error, info};
 }
 
 /// Expose a subset of the system to users of the library

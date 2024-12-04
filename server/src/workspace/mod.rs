@@ -61,25 +61,39 @@ pub struct Workspace {
   config: WorkspaceConfig,
 
   /// A graph database to store the submission data
-  wrangler_db: Option<GraphDb>,
+  pub db: GraphDb,
 
   /// Where to run docker based commands
-  docker: Option<Docker>,
+  pub docker: Option<Docker>,
 }
 
 impl Workspace {
-  // Starts all the services up using the internal configuration
-  pub fn init(config: WorkspaceConfig) -> Result<()> {
-    // Start the logger
-    println!("Logging to {:?}", config.locations.log);
-
+  fn init_db(conf: &GraphDb) -> GraphDb {
     // Connect to to the graph database
-    println!(
-      "Initializing connection to Neo4j: {:?}",
-      config.services.wrangler_db
-    );
+    info!("Initializing connection to Neo4j: {:?}", conf);
 
-    Ok(())
+    let rt = tokio::runtime::Builder::new_current_thread()
+      .enable_all()
+      .build()
+      .unwrap();
+
+    rt.block_on(GraphDb::open(conf.driver.clone(), &conf.db_name.clone()))
+      .unwrap()
+  }
+
+  // Starts all the services up using the internal configuration
+  pub fn init(config: WorkspaceConfig) -> Result<Workspace> {
+    // Start the logger
+    info!("Logging to {:?}", config.locations.log);
+
+    let db = Workspace::init_db(&config.services.wrangler_db);
+
+    let workspace = Workspace {
+      config,
+      db,
+      docker: None,
+    };
+    Ok(workspace)
   }
 }
 

@@ -70,7 +70,7 @@ impl Default for Driver {
 #[derive(Debug, Clone)]
 pub struct GraphDb {
   /// Configuration for the database
-  driver: Driver,
+  pub driver: Driver,
 
   /// An connection pool for communicating with the defined driver.
   ///
@@ -79,7 +79,7 @@ pub struct GraphDb {
   connection: Option<Neo4jConnection>,
 
   /// The name of the graph in the server, the equivalent of a single database in a relational DB.
-  db_name: String,
+  pub db_name: String,
 }
 
 impl GraphDb {

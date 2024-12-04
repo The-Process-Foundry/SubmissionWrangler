@@ -42,6 +42,6 @@ impl Neo4jConfig {
 // Set the default for localhos
 impl Default for Neo4jConfig {
   fn default() -> Neo4jConfig {
-    Neo4jConfig::new("127.0.0.1:7687", "neo4j", "neo4j").unwrap()
+    Neo4jConfig::new("127.0.0.1:7687", "neo4j", "neo_pass").unwrap()
   }
 }

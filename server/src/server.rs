@@ -4,7 +4,10 @@ use serde::{Deserialize, Serialize};
 use std::sync::{Arc, RwLock};
 use tracing::info;
 
-use crate::{longrunner::LongRunner, workspace::Workspace};
+use crate::{
+  longrunner::LongRunner,
+  workspace::{Workspace, WorkspaceConfig},
+};
 use wrangler_common::{calls::LongRunnerCall, longrunner::LongRunnerTask};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -41,7 +44,7 @@ fn executor(task: Arc<RwLock<LongRunnerTask<LongRunnerCall>>>, ctx: Workspace) {
 impl Server {
   pub fn create() -> Server {
     let executor = Arc::new(executor);
-    let workspace = Workspace::default();
+    let workspace = Workspace::init(WorkspaceConfig::default()).unwrap();
     let long_runner = LongRunner::<LongRunnerCall>::new(executor, workspace.clone());
     Server {
       long_runner,
