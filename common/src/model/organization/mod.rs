@@ -1,6 +1,6 @@
 // This is the definition of an Organization: a business entity consisting of at least one person
 
-use super::local::*;
+use super::{address::Address, context_edge::ContextEdge, local::*};
 use std::{
   collections::HashMap,
   sync::{Arc, RwLock},
@@ -16,6 +16,7 @@ pub struct Organization {
   pub name: String,
   pub parent: Option<Arc<RwLock<Organization>>>,
   pub children: HashMap<Uuid, Arc<RwLock<Organization>>>,
+  pub addresses: ContextEdge<Address>,
 }
 
 #[derive(Clone, Debug)]
@@ -44,6 +45,7 @@ impl Organization {
       name: name.to_string(),
       parent: None,
       children: HashMap::new(),
+      addresses: ContextEdge::new(),
     }
   }
 }

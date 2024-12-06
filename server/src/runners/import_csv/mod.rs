@@ -34,16 +34,16 @@ pub fn runner(state: Arc<RwLock<TaskState>>, ctx: Workspace) {
         name: record.get(2).unwrap().to_string(),
         parent: None,
         children: record.get(4).unwrap().to_string(),
-        department: record.get(9).map(|value| value.to_string()),
-        email: record.get(10).map(|value| value.to_string()),
-        phone: record.get(11).map(|value| value.to_string()),
-        address1: record.get(13).unwrap().to_string(),
-        address2: record.get(14).map(|value| value.to_string()),
-        city: record.get(15).unwrap().to_string(),
-        state: record.get(16).unwrap().to_string(),
-        zip: record.get(17).unwrap().to_string(),
-        terms: record.get(18).unwrap().to_string(),
-        cash_credit: record.get(19).map(|value| value.to_string()),
+        department: record.get(7).map(|value| value.to_string()),
+        email: record.get(8).map(|value| value.to_string()),
+        phone: record.get(9).map(|value| value.to_string()),
+        address1: record.get(11).unwrap().to_string(),
+        address2: record.get(12).map(|value| value.to_string()),
+        city: record.get(13).unwrap().to_string(),
+        state: record.get(14).unwrap().to_string(),
+        zip: record.get(15).unwrap().to_string(),
+        terms: record.get(16).unwrap().to_string(),
+        cash_credit: record.get(17).map(|value| value.to_string()),
         raw: format!("{:#?}", record),
       };
 
@@ -56,7 +56,13 @@ pub fn runner(state: Arc<RwLock<TaskState>>, ctx: Workspace) {
   let mut orgs: HashMap<i32, Arc<RwLock<Organization>>> = HashMap::new();
   for (key, value) in org_rows.iter() {
     info!("    key: {}, name {}", key, value.name);
-    orgs.insert(key.clone(), Arc::new(RwLock::new(value.clone().into())));
+    let mut org: Organization = value.clone().into();
+    let _ = org.addresses.add(
+      Arc::new(RwLock::new(value.clone().into())),
+      "Primary".to_string(),
+      1,
+    );
+    orgs.insert(key.clone(), Arc::new(RwLock::new(org)));
   }
 
   // For each row, if children is not empty
@@ -77,11 +83,20 @@ pub fn runner(state: Arc<RwLock<TaskState>>, ctx: Workspace) {
       // - Add the hashmap item to the parent org
       let child = orgs.get(&value.parse().unwrap()).unwrap();
       let guid = child.read().unwrap().guid;
-      let pretty_id = child.read().unwrap().pretty_id.clone();
 
       org.write().unwrap().children.insert(guid, child.clone());
 
-      info!("Got a child value of {} - {}", value, pretty_id);
+      // let reader = child.read().unwrap();
+      // let pretty_id = reader.pretty_id.clone();
+      // info!("Got a child value of {} - {}", value, pretty_id);
+      // let addr = reader.addresses.try_heaviest(None).unwrap().clone();
+      // let addr = addr.read().unwrap();
+      // info!(
+      //   "\t{} {}, {} {}",
+      //   addr.street1, addr.city, addr.state, addr.zip
+      // );
+      // drop(reader);
+      // drop(addr);
 
       // - Add the parent to the child node
       let mut child = child.write().unwrap();

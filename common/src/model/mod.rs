@@ -27,6 +27,8 @@ use organization::Organization;
 pub mod address;
 use address::Address;
 
+pub mod context_edge;
+
 /// Identifiers for the desired object defined in the model
 pub enum ModelNode {
   Organization,

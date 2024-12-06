@@ -3,7 +3,9 @@
 use rust_decimal::Decimal;
 use std::collections::HashMap;
 
-use wrangler_common::model::organization::Organization;
+use wrangler_common::model::{
+  address::Address, context_edge::ContextEdge, organization::Organization,
+};
 
 #[derive(Clone, Debug)]
 pub struct OrganizationRow {
@@ -34,6 +36,21 @@ impl Into<Organization> for OrganizationRow {
       name: self.name,
       parent: None,
       children: HashMap::new(),
+      addresses: ContextEdge::new(),
+    }
+  }
+}
+
+impl Into<Address> for OrganizationRow {
+  fn into(self) -> Address {
+    Address {
+      guid: uuid::Uuid::new_v4(),
+      street1: self.address1,
+      street2: self.address2,
+      street3: None,
+      city: self.city,
+      state: self.state,
+      zip: self.zip,
     }
   }
 }

@@ -19,7 +19,6 @@ pub fn org_grid() -> Html {
       html! {
         <>
         <div class={row_cls.clone()}>{org.guid.to_string()}</div>
-        <div class={row_cls.clone()}>{org.source_id}</div>
         <div class={row_cls.clone()}>{org.pretty_id.clone()}</div>
         <div class={row_cls.clone()}>{org.name.clone()}</div>
         </>
@@ -36,7 +35,6 @@ pub fn org_grid() -> Html {
                 {"Organizations"}
             </div>
             <div class={header_cls.clone()}>{"GUID"}</div>
-            <div class={header_cls.clone()}>{"SOURCE_ID"}</div>
             <div class={header_cls.clone()}>{"PRETTY_ID"}</div>
             <div class={header_cls.clone()}>{"NAME"}</div>
             {rows}
